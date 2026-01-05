@@ -24,13 +24,22 @@ export function parseMarkdown<T = Record<string, unknown>>(
 }
 
 /**
+ * Remove undefined values from an object (YAML cannot serialize undefined).
+ */
+function removeUndefined<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, value]) => value !== undefined)
+  ) as T;
+}
+
+/**
  * Create a markdown string with YAML frontmatter.
  */
 export function createMarkdown<T extends Record<string, unknown>>(
   frontmatter: T,
   content: string
 ): string {
-  return matter.stringify(content, frontmatter);
+  return matter.stringify(content, removeUndefined(frontmatter));
 }
 
 /**
