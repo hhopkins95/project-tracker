@@ -9,12 +9,18 @@
  *   --port, -p  Specify port (default: auto-find starting at 4600)
  *   --open      Open browser after starting
  *   --help, -h  Show help
+ *
+ * Examples:
+ *   npm run dev ./my-workspace
+ *   npm run dev -- --port 3000 ./workspace
+ *   project-tracker ./workspace --open
  */
 
 import { spawn } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
 import * as net from "net";
+import { fileURLToPath } from "url";
 
 const DEFAULT_PORT_START = 4600;
 
@@ -78,6 +84,11 @@ Examples:
   project-tracker ./my-project          Start with custom workspace path
   project-tracker --dev --open          Development mode with auto-open
   project-tracker -p 3000               Use specific port
+
+With npm scripts:
+  npm run dev                           Development mode with ./workspace
+  npm run dev ./my-workspace            Development mode with custom path
+  npm run dev -- --port 3000            Development mode on specific port
 `);
 }
 
@@ -163,7 +174,11 @@ async function main(): Promise<void> {
   console.log(`Starting server on port ${port}...`);
 
   // Get the directory where this CLI script is located
-  const cliDir = path.dirname(__filename);
+  // Handle both ESM and CommonJS contexts
+  const currentFile = typeof __filename !== "undefined"
+    ? __filename
+    : fileURLToPath(import.meta.url);
+  const cliDir = path.dirname(currentFile);
   const projectRoot = path.resolve(cliDir, "..");
 
   // Set environment variables
@@ -174,11 +189,11 @@ async function main(): Promise<void> {
     PORT: port.toString(),
   };
 
-  // Spawn Next.js server
-  const command = args.dev ? "npm" : "npm";
-  const commandArgs = args.dev ? ["run", "dev"] : ["run", "start"];
+  // Spawn Next.js server directly (not via npm to avoid recursion)
+  const nextBin = path.join(projectRoot, "node_modules", ".bin", "next");
+  const commandArgs = args.dev ? ["dev"] : ["start"];
 
-  const child = spawn(command, commandArgs, {
+  const child = spawn(nextBin, commandArgs, {
     cwd: projectRoot,
     env,
     stdio: "inherit",

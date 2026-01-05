@@ -7,9 +7,10 @@
     "project-tracker": "./dist/bin/cli.js"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "tsx bin/cli.ts --dev",
+    "start": "node dist/bin/cli.js",
     "build": "next build && tsc -p tsconfig.cli.json",
-    "start": "next start",
+    "build:next": "next build",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
@@ -32,6 +33,7 @@
     "autoprefixer": "^10.4.0",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   },
   "engines": {
