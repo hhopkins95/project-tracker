@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Initiative } from "@/core/types";
 import { MarkdownContent } from "./MarkdownContent";
 
@@ -10,7 +11,17 @@ interface InitiativeViewProps {
   onRefresh: () => void;
 }
 
+type TabId = "overview" | "sessions" | "decisions" | "plans";
+
 export function InitiativeView({ initiative, onDelete, onMove, onRefresh }: InitiativeViewProps) {
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
+
+  const tabs: { id: TabId; label: string; count?: number }[] = [
+    { id: "overview", label: "Overview" },
+    { id: "sessions", label: "Sessions", count: initiative.sessions.length },
+    { id: "decisions", label: "Decisions", count: initiative.decisions.length },
+    { id: "plans", label: "Plans", count: initiative.plans.length },
+  ];
   const stateColors = {
     active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
     backlog: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
@@ -59,54 +70,73 @@ export function InitiativeView({ initiative, onDelete, onMove, onRefresh }: Init
         </div>
       </header>
 
-      {/* Content */}
+      {/* Tab Bar */}
+      <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6">
+        <nav className="flex gap-6">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.id
+                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              }`}
+            >
+              {tab.label}
+              {tab.count !== undefined && (
+                <span className="ml-1.5 text-xs text-gray-400">({tab.count})</span>
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-4xl">
-          {/* Main content */}
-          <div className="mb-8">
+          {/* Overview Tab */}
+          {activeTab === "overview" && (
             <MarkdownContent content={initiative.content} />
-          </div>
+          )}
 
-          {/* Sessions */}
-          {initiative.sessions.length > 0 && (
-            <section className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Sessions ({initiative.sessions.length})
-              </h2>
+          {/* Sessions Tab */}
+          {activeTab === "sessions" && (
+            initiative.sessions.length > 0 ? (
               <div className="space-y-4">
                 {initiative.sessions.map((session) => (
                   <SessionCard key={session.name} session={session} />
                 ))}
               </div>
-            </section>
+            ) : (
+              <EmptyState message="No sessions yet" />
+            )
           )}
 
-          {/* Decisions */}
-          {initiative.decisions.length > 0 && (
-            <section className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Decisions ({initiative.decisions.length})
-              </h2>
+          {/* Decisions Tab */}
+          {activeTab === "decisions" && (
+            initiative.decisions.length > 0 ? (
               <div className="space-y-4">
                 {initiative.decisions.map((decision) => (
                   <DecisionCard key={decision.name} decision={decision} />
                 ))}
               </div>
-            </section>
+            ) : (
+              <EmptyState message="No decisions yet" />
+            )
           )}
 
-          {/* Plans */}
-          {initiative.plans.length > 0 && (
-            <section>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Plans ({initiative.plans.length})
-              </h2>
+          {/* Plans Tab */}
+          {activeTab === "plans" && (
+            initiative.plans.length > 0 ? (
               <div className="space-y-4">
                 {initiative.plans.map((plan) => (
                   <PlanCard key={plan.name} plan={plan} />
                 ))}
               </div>
-            </section>
+            ) : (
+              <EmptyState message="No plans yet" />
+            )
           )}
         </div>
       </div>
@@ -208,6 +238,15 @@ function PlanCard({ plan }: PlanCardProps) {
       <div className="text-sm">
         <MarkdownContent content={plan.content} />
       </div>
+    </div>
+  );
+}
+
+// Empty state
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+      {message}
     </div>
   );
 }
