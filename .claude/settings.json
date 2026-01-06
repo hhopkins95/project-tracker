@@ -12,6 +12,7 @@
     "project-tracker@local-plugins": true
   },
   "env": {
-    "SMART_DOCS_PATH": "./docs"
+    "SMART_DOCS_PATH": "./docs", 
+    "PROJECT_TRACKER_WORKSPACE": "./workspace"
   }
 }

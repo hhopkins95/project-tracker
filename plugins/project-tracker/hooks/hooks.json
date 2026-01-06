@@ -1,12 +1,16 @@
 {
-  "SessionStart": [
-    {
-      "hooks": [
-        {
-          "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-context.sh"
-        }
-      ]
-    }
-  ]
+  "description": "Project Tracker Plugin Hooks",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-context.ts",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
+  }
 }
