@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "project-tracker-mp",
+  "version": "1.0.0",
+  "description": "Project Tracker Plugins",
+  "owner": {
+    "name": "Hunter Hopkins"
+  },
+  "plugins": [
+    {
+      "name": "project-tracker",
+      "description": "Project Tracker Plugin",
+      "source": "./plugins/project-tracker",
+      "category": "project-management"
+    }
+  ]
+}

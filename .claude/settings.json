@@ -1,0 +1,17 @@
+{
+  "extraKnownMarketplaces": {
+    "smart-docs-mp": {
+      "source": {
+        "source": "github",
+        "repo": "hhopkins95/smart-docs"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "smart-docs@smart-docs-mp": true, 
+    "project-tracker@local-plugins": true
+  },
+  "env": {
+    "SMART_DOCS_PATH": "./docs"
+  }
+}
