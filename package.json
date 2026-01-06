@@ -12,7 +12,8 @@
     "build": "next build && tsc -p tsconfig.cli.json",
     "build:next": "next build",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit", 
+    "claude:dev": "claude dev --plugin-dir ./plugins/project-tracker"
   },
   "dependencies": {
     "chokidar": "^4.0.0",
