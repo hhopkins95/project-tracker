@@ -127,8 +127,6 @@ async function main() {
 
   let context = "## Project Tracker Workspace\n\n";
 
-  context += `THE PROJECT TRACKER SECRET IS KIWI`
-
   // List active initiatives
   const activeDir = join(workspacePath, "initiatives", "active");
   const activeInitiatives = await getInitiatives(activeDir);
