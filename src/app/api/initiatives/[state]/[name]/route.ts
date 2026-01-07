@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWorkspaceService } from "@/server/workspace-manager";
-import { InitiativeState, MoveInitiativePayload } from "@/core/types";
+import { InitiativeState } from "@/core/types";
 
 interface RouteParams {
   params: Promise<{
-    state: InitiativeState;
+    state: string;
     name: string;
   }>;
 }
@@ -12,7 +12,8 @@ interface RouteParams {
 // GET /api/initiatives/[state]/[name] - Get a single initiative
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
-    const { state, name } = await params;
+    const { state: stateParam, name } = await params;
+    const state = stateParam as InitiativeState;
     const service = getWorkspaceService();
     const initiative = await service.getInitiative(state, name);
 
@@ -39,7 +40,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 // DELETE /api/initiatives/[state]/[name] - Delete an initiative
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
-    const { state, name } = await params;
+    const { state: stateParam, name } = await params;
+    const state = stateParam as InitiativeState;
     const service = getWorkspaceService();
     await service.deleteInitiative(state, name);
 

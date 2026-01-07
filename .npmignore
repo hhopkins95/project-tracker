@@ -1,0 +1,72 @@
+# Keep only what's needed for production:
+# - dist/ (CLI)
+# - .next/standalone/ (self-contained server)
+# - .next/static/ (static assets - need to copy to standalone)
+# - public/ (static files)
+
+# Exclude build cache and diagnostics
+.next/cache
+.next/diagnostics
+*.tsbuildinfo
+
+# Exclude non-standalone server files (standalone is self-contained)
+.next/server
+.next/app-build-manifest.json
+.next/build-manifest.json
+.next/export-marker.json
+.next/images-manifest.json
+.next/next-minimal-server.js.nft.json
+.next/next-server.js.nft.json
+.next/package.json
+.next/prerender-manifest.json
+.next/react-loadable-manifest.json
+.next/required-server-files.json
+.next/routes-manifest.json
+.next/app-path-routes-manifest.json
+.next/BUILD_ID
+
+# Source maps (reduce size)
+**/*.map
+
+# Development-only directories
+.claude
+.claude-plugin
+plugins
+workspace
+docs
+bin/*.ts
+
+# TypeScript sources (we ship compiled JS in dist/)
+src
+
+# Config files (not needed for standalone)
+next.config.ts
+tailwind.config.ts
+postcss.config.js
+tsconfig*.json
+next-env.d.ts
+
+# Git
+.git
+.gitignore
+
+# Editor/IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+__tests__
+*.test.*
+*.spec.*
+coverage
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

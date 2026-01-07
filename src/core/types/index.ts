@@ -14,6 +14,7 @@ export interface InitiativeFrontmatter {
   created: string; // YYYY-MM-DD format
   status: InitiativeState;
   tags?: string[];
+  [key: string]: unknown;
 }
 
 export interface Session {
@@ -70,6 +71,7 @@ export interface TodoFrontmatter {
   created: string;
   priority?: "low" | "medium" | "high";
   tags?: string[];
+  [key: string]: unknown;
 }
 
 export interface Todo {
@@ -96,6 +98,7 @@ export interface IdeaFrontmatter {
   title: string;
   created: string;
   tags?: string[];
+  [key: string]: unknown;
 }
 
 export interface Idea {

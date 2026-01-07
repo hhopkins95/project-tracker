@@ -13,7 +13,7 @@ type ViewType = "initiative" | "todo" | "idea" | null;
 type CreateType = "initiative" | "todo" | "idea" | null;
 
 interface SelectedItem {
-  type: ViewType;
+  type: "initiative" | "todo" | "idea";
   state?: "active" | "backlog" | "completed";
   name: string;
 }

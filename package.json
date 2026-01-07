@@ -42,7 +42,8 @@
   },
   "files": [
     "dist",
-    ".next",
+    ".next/standalone",
+    ".next/static",
     "public"
   ],
   "keywords": [
@@ -52,5 +53,13 @@
     "claude-code"
   ],
   "author": "Hunter Hopkins",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hhopkins95/project-tracker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hhopkins95/project-tracker/issues"
+  },
+  "homepage": "https://github.com/hhopkins95/project-tracker#readme"
 }

@@ -4,7 +4,7 @@ import { InitiativeState, MoveInitiativePayload } from "@/core/types";
 
 interface RouteParams {
   params: Promise<{
-    state: InitiativeState;
+    state: string;
     name: string;
   }>;
 }
@@ -12,7 +12,8 @@ interface RouteParams {
 // POST /api/initiatives/[state]/[name]/move - Move initiative to different state
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
-    const { state, name } = await params;
+    const { state: stateParam, name } = await params;
+    const state = stateParam as InitiativeState;
     const service = getWorkspaceService();
     const payload: MoveInitiativePayload = await request.json();
 

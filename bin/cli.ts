@@ -20,8 +20,6 @@ import { spawn } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
 import * as net from "net";
-import { fileURLToPath } from "url";
-
 const DEFAULT_PORT_START = 4600;
 
 interface CliArgs {
@@ -174,11 +172,7 @@ async function main(): Promise<void> {
   console.log(`Starting server on port ${port}...`);
 
   // Get the directory where this CLI script is located
-  // Handle both ESM and CommonJS contexts
-  const currentFile = typeof __filename !== "undefined"
-    ? __filename
-    : fileURLToPath(import.meta.url);
-  const cliDir = path.dirname(currentFile);
+  const cliDir = __dirname;
   const projectRoot = path.resolve(cliDir, "..");
 
   // Set environment variables
@@ -189,15 +183,35 @@ async function main(): Promise<void> {
     PORT: port.toString(),
   };
 
-  // Spawn Next.js server directly (not via npm to avoid recursion)
-  const nextBin = path.join(projectRoot, "node_modules", ".bin", "next");
-  const commandArgs = args.dev ? ["dev"] : ["start"];
+  // Start the server
+  let child;
 
-  const child = spawn(nextBin, commandArgs, {
-    cwd: projectRoot,
-    env,
-    stdio: "inherit",
-  });
+  if (args.dev) {
+    // Development mode: use next dev (requires running from source)
+    const nextBin = path.join(projectRoot, "node_modules", ".bin", "next");
+    if (!fs.existsSync(nextBin)) {
+      console.error("Development mode requires running from the source directory.");
+      console.error("For production use, run without --dev flag.");
+      process.exit(1);
+    }
+    child = spawn(nextBin, ["dev"], {
+      cwd: projectRoot,
+      env,
+      stdio: "inherit",
+    });
+  } else {
+    // Production mode: use standalone server
+    const standaloneServer = path.join(projectRoot, ".next", "standalone", "server.js");
+    if (!fs.existsSync(standaloneServer)) {
+      console.error("Standalone server not found. Please run 'npm run build' first.");
+      process.exit(1);
+    }
+    child = spawn("node", [standaloneServer], {
+      cwd: path.join(projectRoot, ".next", "standalone"),
+      env,
+      stdio: "inherit",
+    });
+  }
 
   // Handle process termination
   const cleanup = () => {
