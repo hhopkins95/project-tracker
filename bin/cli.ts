@@ -172,8 +172,9 @@ async function main(): Promise<void> {
   console.log(`Starting server on port ${port}...`);
 
   // Get the directory where this CLI script is located
+  // CLI is at dist/bin/cli.js, so we need to go up two levels to reach package root
   const cliDir = __dirname;
-  const projectRoot = path.resolve(cliDir, "..");
+  const projectRoot = path.resolve(cliDir, "../..");
 
   // Set environment variables
   const env = {
@@ -183,35 +184,18 @@ async function main(): Promise<void> {
     PORT: port.toString(),
   };
 
-  // Start the server
-  let child;
+  // Find the next binary - check local node_modules first, then global
+  const localNextBin = path.join(projectRoot, "node_modules", ".bin", "next");
+  const nextBin = fs.existsSync(localNextBin) ? localNextBin : "next";
 
-  if (args.dev) {
-    // Development mode: use next dev (requires running from source)
-    const nextBin = path.join(projectRoot, "node_modules", ".bin", "next");
-    if (!fs.existsSync(nextBin)) {
-      console.error("Development mode requires running from the source directory.");
-      console.error("For production use, run without --dev flag.");
-      process.exit(1);
-    }
-    child = spawn(nextBin, ["dev"], {
-      cwd: projectRoot,
-      env,
-      stdio: "inherit",
-    });
-  } else {
-    // Production mode: use standalone server
-    const standaloneServer = path.join(projectRoot, ".next", "standalone", "server.js");
-    if (!fs.existsSync(standaloneServer)) {
-      console.error("Standalone server not found. Please run 'npm run build' first.");
-      process.exit(1);
-    }
-    child = spawn("node", [standaloneServer], {
-      cwd: path.join(projectRoot, ".next", "standalone"),
-      env,
-      stdio: "inherit",
-    });
-  }
+  // Start the server
+  const commandArgs = args.dev ? ["dev"] : ["start"];
+
+  const child = spawn(nextBin, commandArgs, {
+    cwd: projectRoot,
+    env,
+    stdio: "inherit",
+  });
 
   // Handle process termination
   const cleanup = () => {
