@@ -1,6 +1,6 @@
 {
   "name": "@hhopkins/project-tracker",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A dual-interface project tracking system - web app for humans, plugin for AI agents",
   "main": "dist/index.js",
   "bin": {
