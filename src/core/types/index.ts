@@ -39,6 +39,12 @@ export interface Plan {
   content: string;
 }
 
+export interface Tracker {
+  content: string;
+  phase?: string;
+  updated?: string;
+}
+
 export interface Initiative {
   name: string;
   path: string; // Full path to initiative folder
@@ -48,6 +54,7 @@ export interface Initiative {
   sessions: Session[];
   decisions: Decision[];
   plans: Plan[];
+  tracker?: Tracker; // TRACKER.md content if exists
 }
 
 // Summary version for list views (without full content)

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Initiative } from "@/core/types";
+import { useState, useEffect } from "react";
+import { Initiative, FileTreeNode } from "@/core/types";
 import { MarkdownContent } from "./MarkdownContent";
+import { FileTree } from "./FileTree";
+import { FileViewer } from "./FileViewer";
 
 interface InitiativeViewProps {
   initiative: Initiative;
@@ -11,16 +13,37 @@ interface InitiativeViewProps {
   onRefresh: () => void;
 }
 
-type TabId = "overview" | "sessions" | "decisions" | "plans";
+type TabId = "overview" | "tracker" | "sessions" | "decisions" | "plans" | "files";
 
 export function InitiativeView({ initiative, onDelete, onMove, onRefresh }: InitiativeViewProps) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [fileTree, setFileTree] = useState<FileTreeNode[]>([]);
+  const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
+  const [loadingFiles, setLoadingFiles] = useState(false);
 
-  const tabs: { id: TabId; label: string; count?: number }[] = [
+  // Fetch file tree when Files tab is selected
+  useEffect(() => {
+    if (activeTab === "files" && fileTree.length === 0) {
+      setLoadingFiles(true);
+      fetch(`/api/initiatives/${initiative.state}/${initiative.name}/files`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setFileTree(data.data);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoadingFiles(false));
+    }
+  }, [activeTab, initiative.state, initiative.name, fileTree.length]);
+
+  const tabs: { id: TabId; label: string; count?: number; badge?: string }[] = [
     { id: "overview", label: "Overview" },
+    { id: "tracker", label: "Tracker", badge: initiative.tracker?.phase },
     { id: "sessions", label: "Sessions", count: initiative.sessions.length },
     { id: "decisions", label: "Decisions", count: initiative.decisions.length },
     { id: "plans", label: "Plans", count: initiative.plans.length },
+    { id: "files", label: "Files" },
   ];
   const stateColors = {
     active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
@@ -87,6 +110,11 @@ export function InitiativeView({ initiative, onDelete, onMove, onRefresh }: Init
               {tab.count !== undefined && (
                 <span className="ml-1.5 text-xs text-gray-400">({tab.count})</span>
               )}
+              {tab.badge && (
+                <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                  {tab.badge}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -98,6 +126,30 @@ export function InitiativeView({ initiative, onDelete, onMove, onRefresh }: Init
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <MarkdownContent content={initiative.content} />
+          )}
+
+          {/* Tracker Tab */}
+          {activeTab === "tracker" && (
+            initiative.tracker ? (
+              <div>
+                {initiative.tracker.phase && (
+                  <div className="mb-4 flex items-center gap-2">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Phase:</span>
+                    <span className="px-2 py-1 text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                      {initiative.tracker.phase}
+                    </span>
+                    {initiative.tracker.updated && (
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        · Updated: {initiative.tracker.updated}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <MarkdownContent content={initiative.tracker.content} />
+              </div>
+            ) : (
+              <EmptyState message="No TRACKER.md found. Create one to track progress across sessions." />
+            )
           )}
 
           {/* Sessions Tab */}
@@ -139,6 +191,47 @@ export function InitiativeView({ initiative, onDelete, onMove, onRefresh }: Init
             )
           )}
         </div>
+
+        {/* Files Tab - Full width with two-column layout */}
+        {activeTab === "files" && (
+          <div className="h-full flex">
+            {/* File Tree */}
+            <div className="w-64 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 overflow-auto">
+              {loadingFiles ? (
+                <div className="p-4 text-gray-500 dark:text-gray-400 animate-pulse">
+                  Loading files...
+                </div>
+              ) : fileTree.length > 0 ? (
+                <div className="py-2">
+                  <FileTree
+                    nodes={fileTree}
+                    onSelect={setSelectedFilePath}
+                    selectedPath={selectedFilePath ?? undefined}
+                  />
+                </div>
+              ) : (
+                <div className="p-4 text-gray-500 dark:text-gray-400">
+                  No files found
+                </div>
+              )}
+            </div>
+
+            {/* File Viewer */}
+            <div className="flex-1 overflow-auto">
+              {selectedFilePath ? (
+                <FileViewer
+                  filePath={selectedFilePath}
+                  initiativeState={initiative.state}
+                  initiativeName={initiative.name}
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+                  Select a file to view
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

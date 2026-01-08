@@ -19,6 +19,7 @@ import {
   Session,
   Decision,
   Plan,
+  Tracker,
   WorkspaceTree,
   FileTreeNode,
   CreateInitiativePayload,
@@ -240,11 +241,12 @@ export class WorkspaceService {
       const { frontmatter, content: markdownContent } =
         parseMarkdown<InitiativeFrontmatter>(content);
 
-      // Read sessions, decisions, plans
-      const [sessions, decisions, plans] = await Promise.all([
+      // Read sessions, decisions, plans, and tracker
+      const [sessions, decisions, plans, tracker] = await Promise.all([
         this.readSessions(path.join(initiativePath, "sessions")),
         this.readDecisions(path.join(initiativePath, "decisions")),
         this.readPlans(path.join(initiativePath, "plans")),
+        this.readTracker(initiativePath),
       ]);
 
       return {
@@ -256,6 +258,7 @@ export class WorkspaceService {
         sessions,
         decisions,
         plans,
+        tracker: tracker ?? undefined,
       };
     } catch {
       return null;
@@ -561,6 +564,69 @@ export class WorkspaceService {
     } catch {
       return [];
     }
+  }
+
+  /**
+   * Read TRACKER.md from an initiative folder.
+   */
+  private async readTracker(initiativePath: string): Promise<Tracker | null> {
+    const trackerPath = path.join(initiativePath, "TRACKER.md");
+    try {
+      const content = await fs.readFile(trackerPath, "utf-8");
+      const { frontmatter, content: markdownContent } = parseMarkdown<{
+        phase?: string;
+        updated?: string;
+      }>(content);
+      return {
+        content: markdownContent,
+        phase: frontmatter.phase,
+        updated: frontmatter.updated,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Read an arbitrary file from an initiative folder.
+   * Returns null if file doesn't exist or path escapes the initiative folder.
+   */
+  async getInitiativeFile(
+    state: InitiativeState,
+    name: string,
+    filePath: string
+  ): Promise<string | null> {
+    const initiativeRoot = path.join(
+      this.workspacePath,
+      "initiatives",
+      state,
+      name
+    );
+    const fullPath = path.join(initiativeRoot, filePath);
+
+    // Security: validate path doesn't escape initiative folder
+    const resolvedPath = path.resolve(fullPath);
+    const resolvedRoot = path.resolve(initiativeRoot);
+    if (!resolvedPath.startsWith(resolvedRoot)) {
+      return null;
+    }
+
+    try {
+      return await fs.readFile(fullPath, "utf-8");
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Get file tree for an initiative folder.
+   */
+  async getInitiativeFileTree(
+    state: InitiativeState,
+    name: string
+  ): Promise<FileTreeNode[]> {
+    const relativePath = path.join("initiatives", state, name);
+    return this.getFileTree(relativePath);
   }
 
   // ===========================================================================
