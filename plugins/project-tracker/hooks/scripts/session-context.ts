@@ -6,6 +6,7 @@ import path, { join } from "node:path";
 interface Initiative {
   name: string;
   title?: string;
+  description?: string;
 }
 
 interface Frontmatter {
@@ -79,11 +80,12 @@ async function getInitiatives(dir: string): Promise<Initiative[]> {
         const content = await readFile(initFile, "utf-8");
         const frontmatter = parseFrontmatter(content);
         title = frontmatter?.title as string | undefined;
+        const description = frontmatter?.description as string | undefined;
+        initiatives.push({ name: entry.name, title, description });
       } catch {
         // No INITIATIVE.md or can't read it
+        initiatives.push({ name: entry.name });
       }
-
-      initiatives.push({ name: entry.name, title });
     }
   } catch {
     // Directory doesn't exist
@@ -134,11 +136,9 @@ async function main() {
   if (activeInitiatives.length > 0) {
     context += `**Active Initiatives (${activeInitiatives.length}):**\n`;
     for (const init of activeInitiatives) {
-      if (init.title) {
-        context += `- ${init.title} (\`${init.name}\`)\n`;
-      } else {
-        context += `- \`${init.name}\`\n`;
-      }
+      const label = init.title || init.name;
+      const desc = init.description ? `: ${init.description}` : "";
+      context += `- ${label} (\`${init.name}\`)${desc}\n`;
     }
     context += "\n";
   }
