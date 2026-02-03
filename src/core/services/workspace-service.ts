@@ -107,8 +107,9 @@ export class WorkspaceService {
   /**
    * Get raw file tree for a directory.
    */
-  async getFileTree(relativePath: string = ""): Promise<FileTreeNode[]> {
-    const fullPath = path.join(this.workspacePath, relativePath);
+  async getFileTree(relativePath: string = "", baseDir?: string): Promise<FileTreeNode[]> {
+    const root = baseDir ?? this.workspacePath;
+    const fullPath = path.join(root, relativePath);
     const entries = await fs.readdir(fullPath, { withFileTypes: true });
 
     const nodes: FileTreeNode[] = [];
@@ -123,7 +124,7 @@ export class WorkspaceService {
       };
 
       if (entry.isDirectory()) {
-        node.children = await this.getFileTree(nodePath);
+        node.children = await this.getFileTree(nodePath, root);
       }
 
       nodes.push(node);
@@ -625,8 +626,8 @@ export class WorkspaceService {
     state: InitiativeState,
     name: string
   ): Promise<FileTreeNode[]> {
-    const relativePath = path.join("initiatives", state, name);
-    return this.getFileTree(relativePath);
+    const initiativeDir = path.join(this.workspacePath, "initiatives", state, name);
+    return this.getFileTree("", initiativeDir);
   }
 
   // ===========================================================================

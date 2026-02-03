@@ -172,9 +172,11 @@ async function main(): Promise<void> {
   console.log(`Starting server on port ${port}...`);
 
   // Get the directory where this CLI script is located
-  // CLI is at dist/bin/cli.js, so we need to go up two levels to reach package root
+  // In production: dist/bin/cli.js → go up 2 levels to reach package root
+  // In dev (tsx): bin/cli.ts → go up 1 level to reach package root
   const cliDir = __dirname;
-  const projectRoot = path.resolve(cliDir, "../..");
+  const isInDist = cliDir.includes(path.sep + "dist" + path.sep) || cliDir.endsWith(path.sep + "dist");
+  const projectRoot = path.resolve(cliDir, isInDist ? "../.." : "..");
 
   // Set environment variables
   const env = {
